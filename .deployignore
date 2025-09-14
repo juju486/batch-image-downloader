@@ -1,0 +1,26 @@
+# 部署相关文件
+logs/
+node_modules/
+.env
+.env.local
+.env.production
+.DS_Store
+Thumbs.db
+
+# 临时文件
+tmp_deploy/
+*.tmp
+*.log
+
+# IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# 下载的图片（可选，根据需要）
+downloaded_images/
