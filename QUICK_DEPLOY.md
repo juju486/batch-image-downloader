@@ -25,7 +25,7 @@ vercel --prod
 ```bash
 # 单容器部署
 docker build -t image-downloader .
-docker run -d -p 8080:8080 image-downloader
+docker run -d -p 8079:8079 image-downloader
 
 # 使用 Docker Compose（推荐）
 docker-compose up -d
@@ -83,16 +83,16 @@ git push heroku main
 - [ ] Node.js 版本 >= 16.x
 - [ ] 所有依赖已安装 (`npm install`)
 - [ ] 本地测试通过 (`npm start`)
-- [ ] 防火墙端口已开放（8080）
+- [ ] 防火墙端口已开放（8079）
 - [ ] 域名DNS已配置（如需要）
 
 ## 🌐 访问你的应用
 
 部署成功后，你可以通过以下方式访问：
 
-- **本地开发**：http://localhost:8080
+- **本地开发**：http://localhost:8079
 - **Vercel**：https://your-app.vercel.app
-- **VPS/云服务器**：http://your-server-ip:8080
+- **VPS/云服务器**：http://your-server-ip:8079
 - **自定义域名**：http://your-domain.com
 
 ## 🛡️ 生产环境优化
@@ -123,7 +123,7 @@ tar -czf backup-$(date +%Y%m%d).tar.gz /var/www/image-downloader
 ### 端口被占用
 ```bash
 # 检查端口占用
-netstat -tulpn | grep 8080
+netstat -tulpn | grep 8079
 # 或者修改 server.js 中的端口
 ```
 

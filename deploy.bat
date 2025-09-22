@@ -58,7 +58,7 @@ ssh %SERVER_USER%@%SERVER_IP% "cd %DEPLOY_PATH% && npm install --production && m
 REM 健康检查
 echo [INFO] 执行健康检查...
 timeout /t 5 >nul
-ssh %SERVER_USER%@%SERVER_IP% "curl -f http://localhost:8080/health" >nul 2>&1
+ssh %SERVER_USER%@%SERVER_IP% "curl -f http://localhost:8079/health" >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] 健康检查失败，请检查应用状态
     goto :error
@@ -67,7 +67,7 @@ if errorlevel 1 (
 echo.
 echo ==========================================
 echo [INFO] 部署完成！🎉
-echo   访问地址: http://%SERVER_IP%:8080
+echo   访问地址: http://%SERVER_IP%:8079
 echo ==========================================
 goto :end
 

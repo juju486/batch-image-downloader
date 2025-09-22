@@ -6,7 +6,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8079;
 
 // 中间件
 app.use(express.json());

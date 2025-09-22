@@ -25,11 +25,11 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 # 暴露端口
-EXPOSE 8080
+EXPOSE 8079
 
 # 设置环境变量
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=8079
 
 # 启动应用
 CMD ["npm", "start"]

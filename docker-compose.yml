@@ -4,16 +4,16 @@ services:
   image-downloader:
     build: .
     ports:
-      - "8080:8080"
+      - "8079:8079"
     environment:
       - NODE_ENV=production
-      - PORT=8080
+      - PORT=8079
     volumes:
       - ./logs:/app/logs
       - ./downloaded_images:/app/downloaded_images
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8079/health"]
       interval: 30s
       timeout: 10s
       retries: 3

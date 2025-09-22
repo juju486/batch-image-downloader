@@ -127,9 +127,9 @@ health_check() {
     
     sleep 5
     
-    if ssh ${SERVER_USER}@${SERVER_IP} "curl -f http://localhost:8080/health" &>/dev/null; then
+    if ssh ${SERVER_USER}@${SERVER_IP} "curl -f http://localhost:8079/health" &>/dev/null; then
         print_message "健康检查通过 ✓"
-        print_message "应用已成功部署！访问地址: http://${SERVER_IP}:8080"
+        print_message "应用已成功部署！访问地址: http://${SERVER_IP}:8079"
     else
         print_error "健康检查失败，请检查应用状态"
         exit 1

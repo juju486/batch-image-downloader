@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "deploy": "chmod +x deploy.sh && ./deploy.sh",
     "docker:build": "docker build -t image-downloader .",
-    "docker:run": "docker run -d -p 8080:8080 --name image-downloader image-downloader",
+    "docker:run": "docker run -d -p 8079:8079 --name image-downloader image-downloader",
     "docker:compose": "docker-compose up -d",
     "pm2:start": "pm2 start ecosystem.config.js",
     "pm2:stop": "pm2 stop image-downloader",

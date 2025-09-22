@@ -53,11 +53,11 @@ npm start
 #### 步骤5：配置防火墙
 ```bash
 # Ubuntu (ufw)
-sudo ufw allow 8080
+sudo ufw allow 8079
 sudo ufw reload
 
 # CentOS (firewalld)
-sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --permanent --add-port=8079/tcp
 sudo firewall-cmd --reload
 ```
 
@@ -92,7 +92,7 @@ pm2 startup
 docker build -t image-downloader .
 
 # 运行容器
-docker run -d -p 8080:8080 --name image-downloader image-downloader
+docker run -d -p 8079:8079 --name image-downloader image-downloader
 ```
 
 ---
@@ -126,8 +126,8 @@ git push heroku main
 ## 访问应用
 
 部署成功后，访问：
-- 本地开发：http://localhost:8080
-- 服务器部署：http://your-server-ip:8080
+- 本地开发：http://localhost:8079
+- 服务器部署：http://your-server-ip:8079
 - 域名绑定：http://your-domain.com
 
 ## 注意事项

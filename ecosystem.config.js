@@ -8,11 +8,11 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 8080
+      PORT: 8079
     },
     env_production: {
       NODE_ENV: 'production',
-      PORT: 8080
+      PORT: 8079
     },
     // 日志配置
     log_file: './logs/combined.log',
