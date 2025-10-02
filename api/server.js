@@ -118,20 +118,23 @@ module.exports = async (req, res) => {
     
     if (req.method === 'POST' && req.url === '/api/download-zip') {
         try {
-            const { urls } = req.body;
+            const { images, urls } = req.body;
             
-            if (!urls || !Array.isArray(urls) || urls.length === 0) {
-                res.status(400).json({ error: '请提供有效的图片URL数组' });
+            // 兼容新旧格式
+            let imageList = images || urls;
+            
+            if (!imageList || !Array.isArray(imageList) || imageList.length === 0) {
+                res.status(400).json({ error: '请提供有效的图片数据数组' });
                 return;
             }
 
             // Vercel 限制：最多处理10张图片
-            const limitedUrls = urls.slice(0, 10);
-            if (urls.length > 10) {
-                console.log(`限制处理图片数量：${urls.length} -> 10`);
+            const limitedImages = imageList.slice(0, 10);
+            if (imageList.length > 10) {
+                console.log(`限制处理图片数量：${imageList.length} -> 10`);
             }
 
-            console.log(`开始创建压缩包，包含 ${limitedUrls.length} 张图片...`);
+            console.log(`开始创建压缩包，包含 ${limitedImages.length} 张图片...`);
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const zipFilename = `images_${timestamp}.zip`;
@@ -155,17 +158,35 @@ module.exports = async (req, res) => {
 
             // 并发下载图片（最多3个并发）
             const concurrency = 3;
-            for (let i = 0; i < limitedUrls.length; i += concurrency) {
-                const batch = limitedUrls.slice(i, i + concurrency);
-                const promises = batch.map(async (url, batchIndex) => {
+            for (let i = 0; i < limitedImages.length; i += concurrency) {
+                const batch = limitedImages.slice(i, i + concurrency);
+                const promises = batch.map(async (imageData, batchIndex) => {
                     const globalIndex = i + batchIndex;
+                    
+                    // 兼容新旧格式：支持字符串URL或对象格式
+                    const url = typeof imageData === 'string' ? imageData : imageData.url;
+                    const altFilename = typeof imageData === 'object' ? imageData.filename : null;
+                    
                     console.log(`正在下载第 ${globalIndex + 1} 张图片: ${url}`);
                     
                     try {
                         const result = await downloadImage(url);
                         
                         if (result.success) {
-                            const filename = fixFilename(url, result.detectedType, globalIndex);
+                            // 优先使用alt属性作为文件名，否则使用检测到的格式修复文件名
+                            let filename;
+                            if (altFilename) {
+                                // 如果有alt文件名，使用它，但确保有正确的扩展名
+                                const detectedExt = result.detectedType ? result.detectedType.ext : 'jpg';
+                                if (!altFilename.includes('.')) {
+                                    filename = `${altFilename}.${detectedExt}`;
+                                } else {
+                                    filename = altFilename;
+                                }
+                            } else {
+                                filename = fixFilename(url, result.detectedType, globalIndex);
+                            }
+                            
                             archive.append(result.data, { name: filename });
                             successCount++;
                             
@@ -196,7 +217,7 @@ module.exports = async (req, res) => {
             // 添加下载报告
             const report = `下载报告 (Vercel版本)
 ================
-总计: ${limitedUrls.length} 张图片 ${urls.length > 10 ? `(限制从${urls.length}张)` : ''}
+总计: ${limitedImages.length} 张图片 ${imageList.length > 10 ? `(限制从${imageList.length}张)` : ''}
 成功: ${successCount} 张
 失败: ${failCount} 张
 下载时间: ${new Date().toLocaleString('zh-CN')}
@@ -205,11 +226,17 @@ module.exports = async (req, res) => {
 功能特性:
 - ✅ 自动检测图片真实格式
 - ✅ 修复文件扩展名不匹配问题
+- ✅ 支持HTML img标签解析
+- ✅ 使用alt属性作为文件名
 - ✅ 支持 JPEG, PNG, GIF, WebP, BMP, SVG 格式
 - ⚠️  Vercel限制：最多同时处理10张图片
 
 详细列表:
-${limitedUrls.map((url, index) => `${index + 1}. ${url}`).join('\n')}
+${limitedImages.map((imageData, index) => {
+    const url = typeof imageData === 'string' ? imageData : imageData.url;
+    const altName = typeof imageData === 'object' && imageData.filename ? ` (${imageData.filename})` : '';
+    return `${index + 1}. ${url}${altName}`;
+}).join('\n')}
 `;
             
             archive.append(report, { name: 'download_report.txt' });

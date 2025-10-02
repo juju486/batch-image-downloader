@@ -11,14 +11,19 @@
         <h1>批量图片下载器</h1>
         <div class="main-content">
             <div class="input-section">
-                <label for="imageUrls">图片链接 (每行一个链接或用空格分隔):</label>
+                <label for="imageUrls">图片链接或HTML代码:</label>
                 <textarea 
                     id="imageUrls" 
-                    placeholder="请输入图片链接，每行一个或用空格分隔：
+                    placeholder="请输入图片链接或HTML代码：
+
+方式1 - 直接链接：
 https://example.com/image1.jpg
 https://example.com/image2.png
-https://example.com/image3.gif"
-                    rows="8"
+
+方式2 - HTML img标签：
+<img src='https://img.alicdn.com/imgextra/i2/image1.jpg' alt='详情图片_01.jpg' />
+<img src='https://img.alicdn.com/imgextra/i1/image2.jpg' alt='详情图片_02.jpg' />"
+                    rows="10"
                 ></textarea>
                 
                 <div class="url-counter">

@@ -38,13 +38,60 @@ class ImageDownloader {
         const text = this.imageUrls.value.trim();
         if (!text) return [];
         
-        // 按行分割，然后按空格分割，最后过滤空值
+        // 检查是否包含HTML img标签
+        if (text.includes('<img') && text.includes('src=')) {
+            return this.parseHtmlImages(text);
+        }
+        
+        // 原有的URL解析逻辑
         const urls = text.split(/[\n\r]+/)
             .flatMap(line => line.trim().split(/\s+/))
             .filter(url => url.trim() !== '')
             .filter(url => this.isValidUrl(url));
         
         return urls;
+    }
+
+    parseHtmlImages(htmlText) {
+        const images = [];
+        
+        // 更强大的正则表达式匹配img标签 - 支持各种属性顺序
+        const imgRegex = /<img[^>]*>/gi;
+        let match;
+        
+        while ((match = imgRegex.exec(htmlText)) !== null) {
+            const imgTag = match[0];
+            
+            // 提取src属性
+            const srcMatch = imgTag.match(/src\s*=\s*['"]([^'"]+)['"]/i);
+            if (!srcMatch) continue;
+            
+            const src = srcMatch[1];
+            
+            // 提取alt属性
+            const altMatch = imgTag.match(/alt\s*=\s*['"]([^'"]*)['"]/i);
+            const alt = altMatch ? altMatch[1] : '';
+            
+            console.log('解析图片:', { src, alt }); // 调试信息
+            
+            if (this.isValidUrl(src)) {
+                images.push({
+                    url: src,
+                    filename: alt ? this.sanitizeFilename(alt) : null
+                });
+            }
+        }
+        
+        console.log('解析结果:', images); // 调试信息
+        return images;
+    }
+
+    sanitizeFilename(filename) {
+        // 清理文件名，移除非法字符
+        let clean = filename.replace(/[<>:"/\\|?*]/g, '_');
+        
+        // 如果没有扩展名，不添加默认扩展名（让服务器根据实际内容检测）
+        return clean.trim();
     }
 
     isValidUrl(string) {
@@ -57,13 +104,13 @@ class ImageDownloader {
     }
 
     updateUrlCount() {
-        const urls = this.getUrls();
-        this.urlCount.textContent = urls.length;
+        const urlsData = this.getUrls();
+        this.urlCount.textContent = urlsData.length;
     }
 
     updateButtonState() {
-        const urls = this.getUrls();
-        const hasUrls = urls.length > 0;
+        const urlsData = this.getUrls();
+        const hasUrls = urlsData.length > 0;
         
         this.downloadZipBtn.disabled = !hasUrls;
         this.downloadIndividualBtn.disabled = !hasUrls;
@@ -115,8 +162,8 @@ class ImageDownloader {
     }
 
     async downloadAsZip() {
-        const urls = this.getUrls();
-        if (urls.length === 0) return;
+        const urlsData = this.getUrls();
+        if (urlsData.length === 0) return;
 
         this.showProgress();
         this.clearResults();
@@ -130,7 +177,7 @@ class ImageDownloader {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ urls })
+                body: JSON.stringify({ images: urlsData })
             });
 
             if (!response.ok) {
@@ -172,8 +219,8 @@ class ImageDownloader {
     }
 
     async downloadIndividually() {
-        const urls = this.getUrls();
-        if (urls.length === 0) return;
+        const urlsData = this.getUrls();
+        if (urlsData.length === 0) return;
 
         this.showProgress();
         this.clearResults();
@@ -182,13 +229,16 @@ class ImageDownloader {
         let successCount = 0;
         let failCount = 0;
 
-        for (let i = 0; i < urls.length; i++) {
-            const url = urls[i];
-            this.updateProgress(i, urls.length, `正在下载第 ${i + 1} 张图片...`);
+        for (let i = 0; i < urlsData.length; i++) {
+            const imageData = urlsData[i];
+            const url = typeof imageData === 'string' ? imageData : imageData.url;
+            const altFilename = typeof imageData === 'object' ? imageData.filename : null;
+            
+            this.updateProgress(i, urlsData.length, `正在下载第 ${i + 1} 张图片...`);
             
             try {
-                // 获取图片文件名
-                const filename = this.getFilenameFromUrl(url);
+                // 获取图片文件名（优先使用alt属性）
+                const filename = altFilename || this.getFilenameFromUrl(url);
                 
                 // 下载图片
                 const response = await fetch(url);
@@ -216,11 +266,12 @@ class ImageDownloader {
                 
             } catch (error) {
                 failCount++;
-                this.addResult(`✗ 下载失败: ${url} (${error.message})`, false);
+                const displayUrl = typeof imageData === 'string' ? imageData : imageData.url;
+                this.addResult(`✗ 下载失败: ${displayUrl} (${error.message})`, false);
             }
         }
 
-        this.updateProgress(urls.length, urls.length, 
+        this.updateProgress(urlsData.length, urlsData.length, 
             `下载完成！成功: ${successCount}, 失败: ${failCount}`);
         
         setTimeout(() => this.hideProgress(), 3000);
